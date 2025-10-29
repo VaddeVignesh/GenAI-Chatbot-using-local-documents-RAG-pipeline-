@@ -1,100 +1,101 @@
-# RAG Chatbot with Groq API & Streamlit
+# Gen AI RAG Chat Bot using Local Documents (Using RAG Pipeline)
 
-## Overview
+**Gen AI RAG Chat Bot using Local Documents** is a smart chatbot built with **Streamlit** and a **Retrieval-Augmented Generation (RAG)** pipeline.  
+It lets you upload PDFs and have a natural conversation with them — you ask questions, and it replies with context-aware, well-grounded answers directly from the document.
 
-A Retrieval-Augmented Generation (RAG) chatbot built with Streamlit that enables users to upload PDF documents and ask natural language questions about the content. The system retrieves relevant information from documents and generates accurate answers using Groq's Llama API.
+---
+![Task Preview](https://image2url.com/images/1761714183830-388ad1fe-d47e-48f6-9f1a-bf3866d4a450.png)
 
-## How It Works
+## Features
 
-1. **PDF Processing**: Documents are parsed and text is extracted from all pages
-2. **Text Chunking**: Content is split into 800-character chunks while preserving sentence structure
-3. **Metadata Extraction**: System automatically identifies document titles and chapters
-4. **Intelligent Retrieval**: An improved retriever uses multi-factor scoring (phrase matching, word overlap, keyword density) to find relevant chunks
-5. **Answer Generation**: Retrieved chunks are sent to Groq Llama API to generate contextual answers
-6. **Source Attribution**: Each answer includes citations showing which document sections were used
-
-## Key Features
-
-- Automatic PDF text extraction and processing
-- Advanced multi-factor retrieval algorithm
-- Fast response generation via Groq API
-- Persistent chat history within session
-- Source citations for transparency
-- In-memory storage for privacy and speed
-- Clean, intuitive Streamlit interface
-
-
-## Technology Stack
-
-- **Frontend**: Streamlit
-- **PDF Processing**: PyPDF
-- **RAG Framework**: LangChain
-- **LLM Provider**: Groq (Llama models)
-- **Language**: Python 3.8+
-
-## Core Components
-
-**ImprovedRetriever**: Custom retrieval system that scores chunks based on:
-- Exact phrase matches
-- Word overlap with query
-- Keyword density
-- Document metadata boost
-
-**Document Analyzer**: Extracts:
-- Document title from first page
-- Chapter structure and names
-- Page references for citation
-
-**RAG Chain**: Orchestrates the complete Q&A pipeline from user query to final response with sources.
-
-## Storage Architecture
-
-The application uses **in-memory storage** with no external database:
-- All document chunks stored in Python RAM during session
-- Data is temporary and cleared when application restarts
-- Provides privacy, speed, and instant access
-- Limited by available system memory
-
-## Performance
-
-- Small PDF (10 pages): 2-5 seconds
-- Medium PDF (50 pages): 10-15 seconds
-- Large PDF (100+ pages): 20-30 seconds
-- Query response: 1-3 seconds average
-
-
-## Sample Output
-
-The `output/` directory contains:
-- Interface screenshots showing the application layout
-- Example Q&A interactions demonstrating chatbot capabilities
-- Sample PDF document for testing
-
-## Dependencies
-
-See `requirements.txt` for all required packages:
-- streamlit, langchain, langchain-groq, langchain-classic
-- langchain-core, langchain-community
-- pypdf, python-dotenv
-
-## Technical Notes
-
-- No external database required; all processing is local
-- Groq API is used only for LLM inference
-- Document content never leaves your machine
-- Ideal for research, documentation analysis, and content understanding
-
-## Future Enhancements
-
-- Vector-based retrieval using FAISS or ChromaDB for semantic search capabilities
-- Support for additional file formats (DOCX, TXT, images)
-- Persistent database integration (PostgreSQL, MongoDB)
-- Multi-document conversation support
-- Chat history export functionality
-
+- **Upload Any PDF:** Drop in any document — research papers, manuals, policies, etc.  
+- **Understands Context:** It reads, splits, and organizes text intelligently for better retrieval.  
+- **Ask Anything:** You can query naturally, like “What’s the summary of chapter 3?” or “Who is the author mentioning here?”  
+- **Real-Time RAG Flow:** Combines retrieval + reranking + LLM generation seamlessly.  
+- **Modern UI:** Clean, dark Streamlit interface with animated gradient and chat-style messages.  
+- **Live Dashboard:** Sidebar shows insights like number of processed chunks and total queries.  
+- **Caching & State Handling:** Uses `st.session_state` and `@st.cache_resource` to optimize performance.  
+- **Answer Transparency:** Every response includes number of sources and latency details.
 
 ---
 
+## Example Use Cases
 
+- **Research Assistants:** Summarize and analyze multiple academic papers quickly.  
+- **Legal Documents:** Extract clauses, cross-reference legal terms, and locate relevant sections efficiently.  
+- **Business Reports:** Identify key metrics, financial insights, or performance trends.  
+- **Training Manuals:** Retrieve specific definitions, processes, or instructional steps instantly.
 
+---
 
+## How It Works
+
+Here’s the overall flow of how the RAG pipeline runs:
+
+1. **PDF Upload & Text Extraction**  
+   - Upload your file via Streamlit.  
+   - The app extracts all readable text using `pypdf`.  
+   - Each page is tagged with metadata like page number and document name.
+
+2. **Text Chunking**  
+   - Instead of dumping all text at once, it’s chunked using a `PremiumPDFChunker`.  
+   - Each chunk (≈800 characters) keeps meaning intact, ensuring context accuracy during retrieval.
+
+3. **Embeddings Creation**  
+   - Each chunk is converted to numerical vectors using `SentenceTransformer` (`all-MiniLM-L6-v2`).  
+   - These embeddings are stored in a local **ChromaDB** vector database for quick semantic search.
+
+4. **Retriever Logic**  
+   - The custom retriever ranks chunks using multiple signals:  
+     - Keyword similarity  
+     - Phrase-level matches  
+     - Metadata relevance (like page or section titles)
+
+5. **Reranking**  
+   - The top results are reranked using a **CrossEncoder** model (`ms-marco-MiniLM-L-6-v2`).  
+   - This ensures the most contextually accurate parts are sent to the LLM.
+
+6. **Answer Generation**  
+   - Context chunks are passed into **ChatGroq (LLaMA 3.3 70B)** for final answer generation.  
+   - The response is concise, factual, and directly references the source material.
+
+7. **Streamlit Interface**  
+   - All interactions happen through a clean chat UI.  
+   - Each message (user or assistant) is styled like a real chat bubble for better readability.
+
+---
+
+## Tech Stack Overview
+
+| Layer | Tool / Library |
+|-------|----------------|
+| **Frontend** | Streamlit |
+| **Styling** | Custom CSS (Dark theme with animated gradient) |
+| **Vector Store** | ChromaDB |
+| **Embeddings** | SentenceTransformer (`all-MiniLM-L6-v2`) |
+| **Reranking Model** | CrossEncoder (`ms-marco-MiniLM-L-6-v2`) |
+| **LLM** | ChatGroq (`llama-3.3-70b-versatile`) |
+| **PDF Processing** | PyPDF |
+| **Language** | Python 3.10+ |
+
+---
+
+## Conclusion
+
+- **Gen AI RAG Chat Bot using Local Documents** bridges the gap between static PDFs and interactive knowledge retrieval.  
+  It transforms how users interact with documents — replacing manual scrolling and searching with intelligent, conversational exploration.
+
+- This task demonstrates how RAG pipelines combined with LLMs can turn ordinary document reading into an AI-powered discovery experience.  
+  In short, it’s not just a chatbot — it’s a personal document analyst built to make complex reading effortless.
+
+---
+
+## Future Work
+
+Here are some areas planned for enhancement:
+
+- **Multi-Document Querying:** Enable the chatbot to process and respond using information from multiple PDF documents simultaneously.  
+- **Memory-Based Conversations:** Maintain conversational context across multiple turns for more natural and continuous interactions.  
+- **Voice Query Support:** Integrate speech-to-text and text-to-speech functionality for hands-free querying.  
+- **Export Chat Summaries:** Allow users to save entire chat sessions as PDF or Markdown reports.  
+- **Cloud Deployment:** Deploy the chatbot on cloud platforms such as Hugging Face Spaces or Streamlit Cloud for broader accessibility.
